@@ -1,29 +1,27 @@
 const router = require('express').Router();
 const { Tag, Product, ProductTag } = require('../../models');
 
-// The `/api/tags` endpoint
-
 router.get('/', (req, res) => {
   Tag.findAll( { include: Product, through: ProductTag} )
   .then((tagData) => {
     if (!tagData) {
       res.send(404);
     }
+    else {
     res.json(tagData);
+    }
   }).catch(err => res.status(500).send(err));
-  // find all tags
-  // be sure to include its associated Product data
 });
 
 router.get('/:id', (req, res) => {
-  // find a single tag by its `id`
-  // be sure to include its associated Product data
   Tag.findByPk(req.params.id, {include: Product, through: ProductTag})
   .then((tagData) => {
     if (!tagData) {
       res.sendStatus(404)
     }
+    else {
     res.json(tagData);
+    }
   })
 });
 
@@ -37,7 +35,12 @@ router.post('/', async (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-  // update a tag's name by its `id` value
+  try {
+    const updateTag = Tag.update(req.body, {where: {id: req.params.id}});
+    res.status(200).json(updateTag);
+  } catch(err) {
+    res.status(500).json(err);
+  }
 });
 
 router.delete('/:id', async (req, res) => {
@@ -53,7 +56,9 @@ router.delete('/:id', async (req, res) => {
       return;
     }
 
+    else {
     res.status(200).json(tagData);
+    }
   } catch (err) {
     res.status(500).json(err);
   }

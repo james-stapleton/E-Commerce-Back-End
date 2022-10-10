@@ -7,7 +7,9 @@ router.get('/', (req, res) => {
     if (!categories) {
       res.status(400).json({message: "Cannot find categories"})
     }
+    else {
     res.status(200).json(categories)
+    }
   }).catch(err => res.status(500).send("Internal server error"));
 });
 
@@ -17,7 +19,9 @@ router.get('/:id', (req, res) => {
       if (!category) {
         res.status(400).json({message: "Cannot find category by id"})
       }
+      else {
       res.status(200).json(category)
+      }
     }).catch(err => res.status(500).send("Internal server error"));
 });
 
@@ -31,13 +35,12 @@ router.post('/', async (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
-  const {headers, url} = req;
-  console.log(headers, url);
-  const id = req.body.id;
-  const {category_name} = req.body;
-  Category.update().then((category) => {
-
-  });
+  try {
+    const updateCategory = Category.update(req.body, {where: {id: req.params.id}});
+    res.status(200).json(updateCategory);
+  } catch(err) {
+    res.status(500).json(err);
+  }
 });
 
 router.delete('/:id', async (req, res) => {
@@ -49,7 +52,9 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ message: 'No category with this id!' });
       return;
     }
+    else {
     res.status(200).json(categoryData);
+    }
   } catch (err) {
     res.status(500).json(err);
   }
