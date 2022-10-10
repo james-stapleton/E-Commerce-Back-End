@@ -1,13 +1,8 @@
 const router = require('express').Router();
 const { Category, Product } = require('../../models');
 
-// The `/api/categories` endpoint
-
 router.get('/', (req, res) => {
-  // find all categories
-  // be sure to include its associated Products
-   Category.findAll({
-    limit: 10
+   Category.findAll(  { include: Product
   }).then((categories) => {
     if (!categories) {
       res.status(400).json({message: "Cannot find categories"})
@@ -17,30 +12,47 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:id', (req, res) => {
-  // find one category by its `id` value
-  // be sure to include its associated Products
+  Category.findByPk(req.params.id, {include: Product} )
+    .then((category) => {
+      if (!category) {
+        res.status(400).json({message: "Cannot find category by id"})
+      }
+      res.status(200).json(category)
+    }).catch(err => res.status(500).send("Internal server error"));
 });
 
-router.post('/', (req, res) => {
-  // create a new category
-  const { headers, url } = req;
-  console.log(headers,url);
-  const { category_name } = req.body;
-  if (!category_name) {
-    res.status(400).json({message: "category_name is required"})
+router.post('/', async (req, res) => {
+  try {
+    const categoryData = await Category.create(req.body);
+    res.status(200).json(categoryData);
+  } catch (err) {
+    res.status(400).json(err);
   }
-  Category.create({category_name}).then((category) => {
-    console.log(category);
-    res.status(200).json(category)
-  }).catch(err => res.status(500).send(err));
 });
 
 router.put('/:id', (req, res) => {
-  // update a category by its `id` value
+  const {headers, url} = req;
+  console.log(headers, url);
+  const id = req.body.id;
+  const {category_name} = req.body;
+  Category.update().then((category) => {
+
+  });
 });
 
-router.delete('/:id', (req, res) => {
-  // delete a category by its `id` value
+router.delete('/:id', async (req, res) => {
+  try {
+    const categoryData = await Category.destroy({
+      where: { id: req.params.id }
+    });
+    if (!categoryData) {
+      res.status(404).json({ message: 'No category with this id!' });
+      return;
+    }
+    res.status(200).json(categoryData);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 module.exports = router;
